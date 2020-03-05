@@ -1,4 +1,4 @@
-Tomcat catalina.out 파일을 날짜별로 더 쉽게 저장하도록 설정하는 방법
+# Tomcat catalina.out 파일을 날짜별로 더 쉽게 저장하도록 설정하는 방법
 
 기존에 Apache httpd's rotatelogs을 이용할 경우
 1.	추가로 Apache를 설치해야 하고 
