@@ -1,0 +1,171 @@
+version: "3.7"
+
+volumes:
+  mongo_data:
+  mongo2_data:
+  mongo3_data:
+
+services:
+  nginx:
+    image: asp01.ubivelox:5000/uhce-nginx:prod
+    hostname: idc_prod_nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/static:/usr/share/nginx/html:ro
+    deploy:
+      replicas: 3
+
+  mongo-cli:
+    image: mongo:4.0.10
+    volumes:
+      - ~/mongodb-backups/prod:/tmp/backup
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == asp01.ubivelox
+
+  mongo:
+    image: mongo:4.0.10
+    hostname: idc_prod_mongo
+    ports:
+      - 17017:27017
+    volumes:
+      - mongo_data:/data/db
+      - ./mongodb:/data/configdb
+      - ../mongodb-initial-data:/data/initial-data
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == asp01.ubivelox
+    entrypoint:
+      [
+        "/usr/bin/mongod",
+        "--bind_ip_all",
+        "--replSet",
+        "rs0",
+        "--config",
+        "/data/configdb/mongod.conf",
+      ]
+
+  mongo2:
+    image: mongo:4.0.10
+    hostname: idc_prod_mongo2
+    ports:
+      - 17018:27017
+    volumes:
+      - mongo2_data:/data/db
+      - ./mongodb:/data/configdb
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == asp02.ubivelox
+    entrypoint:
+      [
+        "/usr/bin/mongod",
+        "--bind_ip_all",
+        "--replSet",
+        "rs0",
+        "--config",
+        "/data/configdb/mongod.conf",
+      ]
+
+  mongo3:
+    image: mongo:4.0.10
+    hostname: idc_prod_mongo3
+    ports:
+      - 17019:27017
+    volumes:
+      - mongo3_data:/data/db
+      - ./mongodb:/data/configdb
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == asp03.ubivelox
+    entrypoint:
+      [
+        "/usr/bin/mongod",
+        "--bind_ip_all",
+        "--replSet",
+        "rs0",
+        "--config",
+        "/data/configdb/mongod.conf",
+      ]
+
+  server:
+    image: asp01.ubivelox:5000/uhce-server:prod
+    hostname: idc_prod_server
+    environment:
+      - ET_HSM_NETCLIENT_SERVERLIST=192.168.11.7:12396
+    volumes:
+      - ./data/cryptoki:/root/.cryptoki/cryptoki
+    depends_on:
+      - mongo
+      - nginx
+    healthcheck:
+      test: curl -f http://localhost:8800/api/actuator/health || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    deploy:
+      replicas: 3
+
+  webview:
+    image: asp01.ubivelox:5000/uhce-webview:prod
+    hostname: idc_prod_webview
+    depends_on:
+      - mongo
+      - nginx
+    healthcheck:
+      test: curl -f http://localhost:8801/webview/actuator/health || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    deploy:
+      replicas: 3
+
+  admin:
+    image: asp01.ubivelox:5000/uhce-admin:prod
+    hostname: idc_prod_admin
+    environment:
+      - ET_HSM_NETCLIENT_SERVERLIST=192.168.11.7:12396
+    volumes:
+      - ./data/cryptoki:/root/.cryptoki/cryptoki
+    depends_on:
+      - mongo
+      - nginx
+    healthcheck:
+      test: curl -f http://localhost:8093/admin/actuator/health || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    deploy:
+      replicas: 3
+
+  legacy:
+    image: asp01.ubivelox:5000/uhce-legacy:prod
+    hostname: idc_prod_legacy
+    environment:
+      - ET_HSM_NETCLIENT_SERVERLIST=192.168.11.7:12396
+    ports:
+      - 10000:20000
+    depends_on:
+      - mongo
+    deploy:
+      replicas: 1
+
+  scheduler:
+    image: asp01.ubivelox:5000/uhce-scheduler:prod
+    hostname: idc_prod_scheduler
+    depends_on:
+      - mongo
+    deploy:
+      replicas: 1
