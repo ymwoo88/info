@@ -37,3 +37,25 @@ https://enterkey.tistory.com/396
 
 이렇게 하면 Tomcat 설정을 수정하거나 재기동 할 필요가 없습니다.
 Apache rotatelogs 보다 더 쉽고 기능도 다양합니다.
+
+# 내장톰캣
+일반적으로 war로 프로세스 기동 할 때 쓰이는 간단한 스크립트 구문 이다
+```
+[eams@attend_was1 bin]$ cat run.sh
+#!/bin/sh
+
+PROFILE=prod
+FILENAME=adms_tcp.war
+BASEPATH=/home/eams/adms_tcp
+
+DATE=`date +'%Y%m%d_%H%M%S'`
+EXECUTABLE=`nohup java -server -Dfile.encoding=utf-8 -jar "$BASEPATH"/lib/"$FILENAME" --spring.profiles.active="$PROFILE" > /log/eams/adms/tomcat/console.out &`
+
+eval exec "$EXECUTABLE"
+```
+
+```
+[eams@attend_was1 bin]$ cat stop.sh
+ps ax | grep java | grep adms_tcp.war | awk '{print $1}' | xargs kill -15
+
+```
