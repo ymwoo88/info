@@ -110,3 +110,17 @@ server {
     }
 }
 ```
+# nginx SSL 설정
+ - cat /etc/nginx/ssl/ssl.conf
+```
+ssl_certificate             /etc/nginx/ssl/STAR.ajou.ac.kr.crt;
+ssl_certificate_key         /etc/nginx/ssl/STAR.ajou.ac.kr.key;
+ssl_session_timeout         5m;
+ssl_protocols               TLSv1.3 TLSv1.2 TLSv1.1 TLSv1;
+ssl_ciphers                 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH';
+ssl_prefer_server_ciphers   on;
+
+location ~ /\.ht {
+  deny  all;
+}
+```
