@@ -50,3 +50,63 @@ location /watchLogApi-tobe {
     charset utf-8;
 }
 ```
+
+- eams.conf 전체 내용 
+```
+upstream eams {
+    ip_hash;
+    server localhost:31002;
+ }
+
+include /etc/nginx/conf.d/watchlog/watchlog-upstream.conf;
+
+server {
+    listen       80;
+    server_name  devattend.ajou.ac.kr;
+#    return 301   https://$host$request_uri;
+
+     location ~* /eams/(webView|js|css)/ {
+        include /etc/nginx/conf.d/common/proxy_header.conf;
+
+        proxy_pass http://eams;
+        proxy_redirect     http:// $scheme://;
+        proxy_read_timeout 300;
+        charset utf-8;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+
+}
+
+server {
+    listen       443 ssl;
+    server_name devattend.ajou.ac.kr;
+
+    include /etc/nginx/ssl/ssl.conf;
+
+    location ~ ^/$ {
+        return 301  https://$host/eams/index.html;
+    }
+
+    location /eams {
+        include /etc/nginx/conf.d/common/proxy_header.conf;
+
+        access_log  /var/log/nginx/eams/access.log;
+        error_log   /var/log/nginx/eams/error.log;
+
+        proxy_pass http://eams;
+        proxy_redirect     http:// $scheme://;
+        proxy_read_timeout 300;
+        charset utf-8;
+    }
+
+    include /etc/nginx/conf.d/watchlog/watchlog-server.conf;
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+```
