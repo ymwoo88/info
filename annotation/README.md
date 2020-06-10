@@ -1,14 +1,23 @@
-[JAVA]
-@Deprecated
-java.lang.Deprecated
+# [JAVA]==========[JAVA]==========[JAVA]
+# @Deprecated
+## java.lang.Deprecated
  - zmffotm, apthem
- -  - tkdydgkwl dksgdms zmffotm alc apthemdp ekfdkensms dyd
+ - 사용하지 않은 클래스 나 메스드에 설정하는 용도 
+ ```
+ @Deprecated
+ public class HaksaMatchingAfterChgLectTask {
+     @Deprecated
+     public void test() {
+     }
+ }
+ ```
  
-@PostConstruct
-import javax.annotation.PostConstruct;
- - apthem
-@SuppressWarnings(“unused”) 
-java.lang.SuppressWarnings
+# @PostConstruct
+## import javax.annotation.PostConstruct;
+ - 사용위치 : 메소드
+ 
+# @SuppressWarnings(“unused”) 
+## java.lang.SuppressWarnings
  - zmffotm, apthem
  -  
 [SPRING]
