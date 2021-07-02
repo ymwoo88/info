@@ -1,5 +1,15 @@
 # 다양한 자료들이 모이는 곳
 
+# 배치성 프로세스 작성
+### 배치 성 로직 개발 시 응답이 느린 경우를 해소하기 위해 Executors 사용
+```
+        ExecutorService executor =  Executors.newSingleThreadExecutor();
+        executor.submit(() -> batchService.updateRecommendSchedulerByCity());
+
+        // 더이상 ExecutorService에 Task를 추가할 수 없습니다.
+        executor.shutdown();
+
+```
 
 # 람다식
 ### 람다식에서 final변수를 사용해야하는 이유
